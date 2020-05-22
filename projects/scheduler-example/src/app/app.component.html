@@ -1,0 +1,13 @@
+<ngx-scheduler
+	(finishedSelecting)="endSelecting($event)"
+	(editInfo)="handleEdit($event)"
+	[persons]="persons"
+	[showBy]="select.value"
+	[placement]="'bottom'"
+	[delay]="100"
+></ngx-scheduler>
+
+<select (change)="(select)" #select>
+	<option value="day">day</option>
+	<option value="month">month</option>
+</select>

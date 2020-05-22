@@ -2,5 +2,159 @@
   "$schema": "./node_modules/@angular/cli/lib/config/schema.json",
   "version": 1,
   "newProjectRoot": "projects",
-  "projects": {}
+  "projects": {
+    "scheduler": {
+      "projectType": "library",
+      "root": "projects/scheduler",
+      "sourceRoot": "projects/scheduler/src",
+      "prefix": "ngx",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-ng-packagr:build",
+          "options": {
+            "tsConfig": "projects/scheduler/tsconfig.lib.json",
+            "project": "projects/scheduler/ng-package.json"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/scheduler/src/test.ts",
+            "tsConfig": "projects/scheduler/tsconfig.spec.json",
+            "karmaConfig": "projects/scheduler/karma.conf.js"
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/scheduler/tsconfig.lib.json",
+              "projects/scheduler/tsconfig.spec.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        }
+      }
+    },
+    "scheduler-example": {
+      "projectType": "application",
+      "schematics": {},
+      "root": "projects/scheduler-example",
+      "sourceRoot": "projects/scheduler-example/src",
+      "prefix": "app",
+      "architect": {
+        "build": {
+          "builder": "@angular-devkit/build-angular:browser",
+          "options": {
+            "outputPath": "dist/scheduler-example",
+            "index": "projects/scheduler-example/src/index.html",
+            "main": "projects/scheduler-example/src/main.ts",
+            "polyfills": "projects/scheduler-example/src/polyfills.ts",
+            "tsConfig": "projects/scheduler-example/tsconfig.app.json",
+            "aot": false,
+            "assets": [
+              "projects/scheduler-example/src/favicon.ico",
+              "projects/scheduler-example/src/assets"
+            ],
+            "styles": [
+              "projects/scheduler-example/src/styles.css"
+            ],
+            "scripts": []
+          },
+          "configurations": {
+            "production": {
+              "fileReplacements": [
+                {
+                  "replace": "projects/scheduler-example/src/environments/environment.ts",
+                  "with": "projects/scheduler-example/src/environments/environment.prod.ts"
+                }
+              ],
+              "optimization": true,
+              "outputHashing": "all",
+              "sourceMap": false,
+              "extractCss": true,
+              "namedChunks": false,
+              "aot": true,
+              "extractLicenses": true,
+              "vendorChunk": false,
+              "buildOptimizer": true,
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "2mb",
+                  "maximumError": "5mb"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "6kb",
+                  "maximumError": "10kb"
+                }
+              ]
+            }
+          }
+        },
+        "serve": {
+          "builder": "@angular-devkit/build-angular:dev-server",
+          "options": {
+            "browserTarget": "scheduler-example:build"
+          },
+          "configurations": {
+            "production": {
+              "browserTarget": "scheduler-example:build:production"
+            }
+          }
+        },
+        "extract-i18n": {
+          "builder": "@angular-devkit/build-angular:extract-i18n",
+          "options": {
+            "browserTarget": "scheduler-example:build"
+          }
+        },
+        "test": {
+          "builder": "@angular-devkit/build-angular:karma",
+          "options": {
+            "main": "projects/scheduler-example/src/test.ts",
+            "polyfills": "projects/scheduler-example/src/polyfills.ts",
+            "tsConfig": "projects/scheduler-example/tsconfig.spec.json",
+            "karmaConfig": "projects/scheduler-example/karma.conf.js",
+            "assets": [
+              "projects/scheduler-example/src/favicon.ico",
+              "projects/scheduler-example/src/assets"
+            ],
+            "styles": [
+              "projects/scheduler-example/src/styles.css"
+            ],
+            "scripts": []
+          }
+        },
+        "lint": {
+          "builder": "@angular-devkit/build-angular:tslint",
+          "options": {
+            "tsConfig": [
+              "projects/scheduler-example/tsconfig.app.json",
+              "projects/scheduler-example/tsconfig.spec.json",
+              "projects/scheduler-example/e2e/tsconfig.json"
+            ],
+            "exclude": [
+              "**/node_modules/**"
+            ]
+          }
+        },
+        "e2e": {
+          "builder": "@angular-devkit/build-angular:protractor",
+          "options": {
+            "protractorConfig": "projects/scheduler-example/e2e/protractor.conf.js",
+            "devServerTarget": "scheduler-example:serve"
+          },
+          "configurations": {
+            "production": {
+              "devServerTarget": "scheduler-example:serve:production"
+            }
+          }
+        }
+      }
+    }},
+  "defaultProject": "scheduler"
 }
