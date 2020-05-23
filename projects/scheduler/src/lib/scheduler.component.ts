@@ -191,8 +191,8 @@ import { USER_OPTIONS } from './lib.config.token';
 				font-weight: 600;
 				color: #1a1a1a;
 				border: 1px solid #d5d5d5;
-				width: 80px;
-				min-width: 80px;
+				width: 100px;
+				min-width: 100px;
 				padding: 9px;
 				text-align: left;
 			}
@@ -218,8 +218,8 @@ import { USER_OPTIONS } from './lib.config.token';
 				background-color: #fff;
 				border: 1px solid #d5d5d5;
 				height: 100px;
-				width: 80px;
-				min-width: 80px;
+				width: 100px;
+				min-width: 100px;
 			}
 			.projectLabel {
 				position: relative;
@@ -332,15 +332,12 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	) {}
 
 	ngOnChanges(changes: SimpleChanges) {
-		console.log(changes);
-		if (changes.showBy && changes.showBy.currentValue === 'month') {
-		} else if (changes.showBy && changes.showBy.currentValue === 'day') {
+		if (changes.showBy) {
+			this.generateAllDates();
 		}
 	}
 
-	ngOnInit() {
-		this.generateAllDates();
-	}
+	ngOnInit() {}
 
 	ngAfterViewInit(): void {
 		this.scrollToToday();
@@ -369,12 +366,22 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		while (pastYear <= TO_DATE.getFullYear()) {
 			const FRAME =
 				pastYear === TO_DATE.getFullYear() ? TO_DATE.getMonth() : 11;
-			for (let index = pastMonth; index <= FRAME; index++) {
+			if (this.showBy === 'day') {
+				for (let index = pastMonth; index <= FRAME; index++) {
+					DATEOBJ.push({
+						month: new Date(Date.UTC(pastYear, pastMonth, 1)),
+						weekDays: this.generateDates(pastYear, pastMonth),
+					});
+					pastMonth = pastMonth === 11 ? 0 : pastMonth + 1;
+				}
+			} else {
 				DATEOBJ.push({
 					month: new Date(Date.UTC(pastYear, pastMonth, 1)),
-					weekDays: this.generateDates(pastYear, pastMonth),
+					weekDays: this.generateMonths(pastYear, pastMonth, FRAME),
 				});
-				pastMonth = pastMonth === 11 ? 0 : pastMonth + 1;
+				for (let index = pastMonth; index <= FRAME; index++) {
+					pastMonth = pastMonth === 11 ? 0 : pastMonth + 1;
+				}
 			}
 			pastYear += 1;
 		}
@@ -391,12 +398,14 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	}
 
 	generateDates(year, month): Date[] {
-		const DATE = new Date(Date.UTC(year, month, 1));
+		const DATEOBJ = new Date(Date.UTC(year, month, 1));
 		const WEEKDAYS = [];
-		while (DATE.getMonth() === month) {
-			WEEKDAYS.push(new Date(DATE));
-			DATE.setDate(DATE.getDate() + 1);
+
+		while (DATEOBJ.getMonth() === month) {
+			WEEKDAYS.push(new Date(DATEOBJ));
+			DATEOBJ.setDate(DATEOBJ.getDate() + 1);
 		}
+
 		return WEEKDAYS;
 	}
 
@@ -404,11 +413,14 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		const FROM = new Date(start);
 		const TO = new Date(end);
 		const CHECK = new Date(current);
-		return (
-			CHECK >= FROM &&
-			CHECK <= TO &&
-			!this.libConfig.skipDays.includes(CHECK.getDay())
-		);
+		if (this.showBy === 'day') {
+			return (
+				CHECK >= FROM &&
+				CHECK <= TO &&
+				!this.libConfig.skipDays.includes(CHECK.getDay())
+			);
+		}
+		return CHECK >= FROM && CHECK <= TO;
 	}
 
 	enter(ev): void {
@@ -480,6 +492,16 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		ELEM.scrollIntoView();
 	}
 
+	generateMonths(year: number, month: number, toMonth: number): Date[] {
+		let counter = month;
+		let months = [];
+		while (counter <= toMonth) {
+			(<Date[]>months) = [...months, new Date(Date.UTC(year, counter, 1))];
+			counter++;
+		}
+		return months;
+	}
+
 	isToday(day): boolean {
 		return new Date(day).toDateString() === new Date().toDateString();
 	}
@@ -502,9 +524,8 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 }
 
 export interface Day {
-	month: number;
-	year: number;
-	weekDays: string[];
+	month: Date;
+	weekDays: Date[];
 }
 
 export interface Person {
