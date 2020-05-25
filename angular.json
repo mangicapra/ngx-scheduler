@@ -155,6 +155,10 @@
           }
         }
       }
-    }},
-  "defaultProject": "scheduler"
+    }
+  },
+  "defaultProject": "scheduler",
+  "cli": {
+    "analytics": false
+  }
 }

@@ -1,11 +1,16 @@
 <ngx-scheduler
 	(finishedSelecting)="endSelecting($event)"
 	(editInfo)="handleEdit($event)"
+	(excludedDay)="handleExclude($event)"
+	(includedDay)="handleInclude($event)"
 	[persons]="persons"
 	[showBy]="select.value"
 	[placement]="'bottom'"
 	[delay]="100"
-></ngx-scheduler>
+	[todayButtonLabel]="'Today'"
+	[dayOffLabel]="'Day off'"
+>
+</ngx-scheduler>
 
 <select (change)="(select)" #select>
 	<option value="day">day</option>

@@ -13,9 +13,15 @@ import {
 	Inject,
 	OnChanges,
 	SimpleChanges,
+	TemplateRef,
+	ViewContainerRef,
 } from '@angular/core';
 import { LibConfig } from './scheduler.config';
 import { USER_OPTIONS } from './lib.config.token';
+import { Subscription, fromEvent } from 'rxjs';
+import { OverlayRef, Overlay } from '@angular/cdk/overlay';
+import { TemplatePortal } from '@angular/cdk/portal';
+import { take, filter } from 'rxjs/operators';
 
 @Component({
 	selector: 'ngx-scheduler',
@@ -25,7 +31,7 @@ import { USER_OPTIONS } from './lib.config.token';
 			class="scrollToToday"
 			(click)="scrollToToday()"
 		>
-			Today
+			{{ todayButtonLabel || 'Today' }}
 		</button>
 		<div class="table">
 			<div class="left">
@@ -99,6 +105,10 @@ import { USER_OPTIONS } from './lib.config.token';
 									*ngFor="let project of person?.data; trackBy: trackData"
 								>
 									<span
+										(contextmenu)="
+											open($event, person.id, project, weekday);
+											$event.preventDefault()
+										"
 										[showTooltip]="libConfig?.showTooltip"
 										[tooltip]="project?.description || ''"
 										[placement]="placement"
@@ -110,11 +120,21 @@ import { USER_OPTIONS } from './lib.config.token';
 										"
 										>{{ project?.name }} {{ project?.hours }}</span
 									>
+
+									<span
+										(contextmenu)="
+											open($event, person.id, project, weekday);
+											$event.preventDefault()
+										"
+										*ngIf="isDayOff(project?.from, project?.to, weekday)"
+										class="dayOff"
+										>{{ dayOffLabel || 'Day off' }}</span
+									>
 								</label>
 								<div
 									#selectionDiv
 									class="selectionDiv"
-									(mousedown)="startSelect($event, weekday)"
+									(mousedown)="startSelect($event, weekday, person?.id)"
 									(mouseenter)="enter($event)"
 									(mousemove)="reCalc($event)"
 									(mouseup)="endSelect($event, weekday, person?.id)"
@@ -134,6 +154,31 @@ import { USER_OPTIONS } from './lib.config.token';
 				</div>
 			</div>
 		</div>
+
+		<ng-template #userMenu let-data>
+			<section class="user-menu">
+				<div
+					*ngIf="
+						calculateFromTo(
+							data?.project?.from,
+							data?.project?.to,
+							data?.weekday
+						)
+					"
+					(click)="excludeDay(data)"
+				>
+					Exclude day
+				</div>
+				<div
+					*ngIf="
+						isDayOff(data?.project?.from, data?.project?.to, data?.weekday)
+					"
+					(click)="includeDay(data)"
+				>
+					Include day
+				</div>
+			</section>
+		</ng-template>
 	`,
 	styles: [
 		`
@@ -241,6 +286,11 @@ import { USER_OPTIONS } from './lib.config.token';
 				-moz-user-select: none;
 				-ms-user-select: none;
 				user-select: none;
+				position: relative;
+			}
+			.dayOff {
+				background: #f2f0eb 0% 0% no-repeat padding-box;
+				color: #27241d !important;
 			}
 			.today {
 				background-color: rgba(241, 229, 188, 0.5);
@@ -309,6 +359,106 @@ import { USER_OPTIONS } from './lib.config.token';
 			.ng-tooltip-show {
 				opacity: 1;
 			}
+			.my-menu {
+				background-color: #fff;
+				border: 1px solid rosybrown;
+				padding: 20px;
+			}
+
+			.user-menu {
+				background-color: #fafafa;
+				padding: 4pt;
+				font-size: 10pt;
+				z-index: 1000;
+				box-shadow: 0 0 12pt rgba(0, 0, 0, 0.25);
+				border-radius: 4pt;
+				padding: 0.5em 0 0.5em 0;
+				animation: fadeIn 0.1s ease-out;
+				opacity: 1;
+				display: block;
+			}
+
+			.user-menu hr {
+				border: none;
+				border-bottom: 1px solid #eee;
+			}
+
+			.user-menu div {
+				cursor: pointer;
+				display: block;
+				text-decoration: none;
+				color: #333;
+				padding: 0.5em 2em 0.5em 0.75em;
+				max-width: 18em;
+				white-space: nowrap;
+				overflow: hidden;
+				text-overflow: ellipsis;
+			}
+
+			.user-menu div:hover {
+				background-color: #333;
+				color: #fff;
+			}
+
+			.user-menu div::before {
+				content: '';
+				float: left;
+				margin-right: 0.75em;
+				width: 0.5em;
+				height: 1em;
+				display: inline-block;
+			}
+
+			/* Animatinons */
+			@-webkit-keyframes fadeIn {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+
+			@keyframes fadeIn {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+
+			@-webkit-keyframes fadeOut {
+				from {
+					opacity: 1;
+				}
+				to {
+					opacity: 0;
+				}
+			}
+
+			@keyframes fadeOut {
+				from {
+					opacity: 1;
+				}
+				to {
+					opacity: 0;
+				}
+			}
+
+			.is-fadingIn {
+				-webkit-animation: fadeIn 0.1s ease-out;
+				animation: fadeIn 0.1s ease-out;
+				opacity: 1;
+				display: block;
+			}
+
+			.is-fadingOut {
+				-webkit-animation: fadeOut 0.1s ease-out;
+				animation: fadeOut 0.1s ease-out;
+				opacity: 0;
+				display: block;
+			}
 		`,
 	],
 	changeDetection: ChangeDetectionStrategy.OnPush,
@@ -316,19 +466,29 @@ import { USER_OPTIONS } from './lib.config.token';
 export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	days: Day[];
 	isSelecting = false;
-	@ViewChild('container', null) container: ElementRef;
 	startDay: Date;
+	startUser: number;
+	sub: Subscription;
+	overlayRef: OverlayRef | null;
+	@ViewChild('container', { static: true }) container: ElementRef;
+	@ViewChild('userMenu', { static: true }) userMenu: TemplateRef<any>;
+	@ViewChildren('selectionDiv') selections: QueryList<any>;
 	@Input() persons: Person[];
 	@Input() showBy: ShowBy;
 	@Input() delay: number;
+	@Input() dayOffLabel: string;
+	@Input() todayButtonLabel: string;
 	@Input() placement: Placement;
 	@Output() finishedSelecting = new EventEmitter();
 	@Output() editInfo = new EventEmitter();
-	@ViewChildren('selectionDiv') selections: QueryList<any>;
+	@Output() excludedDay = new EventEmitter();
+	@Output() includedDay = new EventEmitter();
 
 	constructor(
 		@Inject(USER_OPTIONS) public libConfig: LibConfig,
-		private elementRef: ElementRef
+		private elementRef: ElementRef,
+		public overlay: Overlay,
+		public viewContainerRef: ViewContainerRef
 	) {}
 
 	ngOnChanges(changes: SimpleChanges) {
@@ -423,6 +583,17 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		return CHECK >= FROM && CHECK <= TO;
 	}
 
+	isDayOff(start, end, current): boolean {
+		const FROM = new Date(start);
+		const TO = new Date(end);
+		const CHECK = new Date(current);
+		return (
+			CHECK >= FROM &&
+			CHECK <= TO &&
+			this.libConfig.skipDays.includes(CHECK.getDay())
+		);
+	}
+
 	enter(ev): void {
 		if (this.isSelecting) {
 			if (ev.target.classList.contains('selected')) {
@@ -451,15 +622,19 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		}
 	}
 
-	startSelect(ev, day): void {
+	startSelect(ev, day, user): void {
 		// tslint:disable-next-line:curly
 		if (ev.button !== 0) return;
+		this.startUser = user;
 		this.isSelecting = true;
 		ev.target.classList.add('selected');
 		this.startDay = day;
 	}
 
-	endSelect(ev, endDay, user) {
+	endSelect(ev, endDay, user): void {
+		if (this.startUser !== user) {
+			throw "Start and end row doesn't match! You might have started selecting in one row and ended up in another one.";
+		}
 		// tslint:disable-next-line:curly
 		if (ev.button !== 0) return;
 		ev.target.classList.add('selected');
@@ -500,6 +675,63 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 			counter++;
 		}
 		return months;
+	}
+
+	open({ x, y }: MouseEvent, user, project, weekday) {
+		this.close();
+		const positionStrategy = this.overlay
+			.position()
+			.flexibleConnectedTo({ x, y })
+			.withPositions([
+				{
+					originX: 'end',
+					originY: 'bottom',
+					overlayX: 'end',
+					overlayY: 'top',
+				},
+			]);
+
+		this.overlayRef = this.overlay.create({
+			positionStrategy,
+			scrollStrategy: this.overlay.scrollStrategies.close(),
+		});
+
+		this.overlayRef.attach(
+			new TemplatePortal(this.userMenu, this.viewContainerRef, {
+				$implicit: { user, project, weekday },
+			})
+		);
+
+		this.sub = fromEvent<MouseEvent>(document, 'click')
+			.pipe(
+				filter((event) => {
+					const clickTarget = event.target as HTMLElement;
+					return (
+						!!this.overlayRef &&
+						!this.overlayRef.overlayElement.contains(clickTarget)
+					);
+				}),
+				take(1)
+			)
+			.subscribe(() => this.close());
+	}
+
+	close() {
+		this.sub && this.sub.unsubscribe();
+		if (this.overlayRef) {
+			this.overlayRef.dispose();
+			this.overlayRef = null;
+		}
+	}
+
+	excludeDay(data): void {
+		this.close();
+		this.excludedDay.emit(data);
+	}
+
+	includeDay(data): void {
+		this.close();
+		this.includedDay.emit(data);
 	}
 
 	isToday(day): boolean {

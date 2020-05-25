@@ -72,4 +72,10 @@ export class AppComponent {
 	handleEdit(ev) {
 		console.log(ev);
 	}
+	handleExclude(ev) {
+		console.log(ev);
+	}
+	handleInclude(ev) {
+		console.log(ev);
+	}
 }
