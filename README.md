@@ -107,7 +107,7 @@ When sending data you must send predefined fields:
 		]
 ```
 
-`departments`, `hours` and `description` are optional. When working with `(excludedDay)` and `(includedDay)` you should manualy set that day to corresponding array and also remove it from other.
+`departments`, `hours` and `description` are optional. When working with `(excludedDay)` and `(includedDay)` you should manualy set that day to corresponding array and also remove it from other. To trigger these actions press right click and in context menu choose which one suits you. If it's working day there will only be option to set it as day off and vice versa.
 
 ```typescript
 	handleExclude(ev) {
@@ -131,7 +131,3 @@ When sending data you must send predefined fields:
 ```
 
 To select day range click on one cell and drag in one direction, if by accident you end up in a different row nothing will happen since package tracks start row.
-
-### Licence
-
-MIT

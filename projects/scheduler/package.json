@@ -1,5 +1,5 @@
 {
-	"name": "scheduler",
+	"name": "angular-schedule",
 	"version": "0.0.1",
 	"description": "A simple and light schedule package for angular.",
 	"author": "Dragan Dejanovic",
