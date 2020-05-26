@@ -6,7 +6,7 @@
 
 ### Setup
 
-`npm install --save angular-schedule @angular/cdk`
+`npm install --save angular-schedule @angular/cdk@8.2.1`
 
 import `SchedulerModule`
 

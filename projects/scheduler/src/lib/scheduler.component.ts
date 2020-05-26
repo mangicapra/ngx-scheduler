@@ -776,7 +776,7 @@ export interface Day {
 export interface Person {
 	id: number;
 	name: string;
-	departments: string[];
+	departments?: string[];
 	data: Project[];
 }
 
@@ -784,12 +784,12 @@ export interface Project {
 	id: number;
 	name: string;
 	color: string;
-	from: Date;
-	to: Date;
-	hours: string;
-	description: string;
-	includeDays: Date[];
-	excludeDays: Date[];
+	from: Date | string;
+	to: Date | string;
+	hours?: string;
+	description?: string;
+	includeDays: Date[] | string[];
+	excludeDays: Date[] | string[];
 }
 
 export type ShowBy = 'month' | 'day';
