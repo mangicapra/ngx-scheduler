@@ -6,12 +6,12 @@
 
 ### Setup
 
-`npm install --save ngx-scheduler @angular/cdk`
+`npm install --save angular-schedule @angular/cdk`
 
 import `SchedulerModule`
 
 ```typescript
-import { SchedulerModule } from 'scheduler';
+import { SchedulerModule } from 'angular-schedule';
 
 const CONFIG = {
     		showTooltip: true,
