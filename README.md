@@ -72,7 +72,7 @@ In your component add `<ngx-scheduler></ngx-scheduler>`
 
 When sending data you must send predefined fields:
 
-```json
+```typescript
 		persons: Person[] = [{
 			id: 1,
 			name: 'Tom Tompson',
@@ -131,3 +131,7 @@ When sending data you must send predefined fields:
 ```
 
 To select day range click on one cell and drag in one direction, if by accident you end up in a different row nothing will happen since package tracks start row.
+
+### Licence
+
+MIT
