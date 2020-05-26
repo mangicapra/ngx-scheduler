@@ -13,7 +13,6 @@ import { AppComponent } from './app.component';
 			showToday: true,
 			monthsInPast: 5,
 			monthsInFuture: 10,
-			skipDays: [0, 6], // 0 - sunday, 6 - saturday
 		}),
 	],
 	providers: [],

@@ -1,6 +1,24 @@
 {
 	"name": "scheduler",
 	"version": "0.0.1",
+	"description": "A simple and light schedule package for angular.",
+	"author": "Dragan Dejanovic",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/mangicapra/ngx-scheduler.git"
+	},
+	"bugs": {
+		"url": "https://github.com/mangicapra/ngx-scheduler/issues"
+	},
+	"homepage": "https://github.com/mangicapra/ngx-scheduler",
+	"keywords": [
+		"angular",
+		"typescript",
+		"schedule",
+		"calendar",
+		"manager"
+	],
+	"license": "MIT",
 	"peerDependencies": {
 		"@angular/common": "^8.2.14",
 		"@angular/core": "^8.2.14",

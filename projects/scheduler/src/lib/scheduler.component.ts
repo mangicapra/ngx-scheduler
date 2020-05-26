@@ -505,7 +505,6 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	) {}
 
 	ngOnChanges(changes: SimpleChanges) {
-		console.log(changes);
 		if (changes.showBy) {
 			this.generateAllDates();
 		}
@@ -591,11 +590,10 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		const FROM = new Date(start);
 		const TO = new Date(end);
 		const CHECK = new Date(current);
+		const SKIP_DAYS = this.libConfig.skipDays || [0, 6];
 		if (this.showBy === 'day') {
 			return (
-				CHECK >= FROM &&
-				CHECK <= TO &&
-				!this.libConfig.skipDays.includes(CHECK.getDay())
+				CHECK >= FROM && CHECK <= TO && !SKIP_DAYS.includes(CHECK.getDay())
 			);
 		}
 		return CHECK >= FROM && CHECK <= TO;
@@ -605,11 +603,8 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		const FROM = new Date(start);
 		const TO = new Date(end);
 		const CHECK = new Date(current);
-		return (
-			CHECK >= FROM &&
-			CHECK <= TO &&
-			this.libConfig.skipDays.includes(CHECK.getDay())
-		);
+		const SKIP_DAYS = this.libConfig.skipDays || [0, 6];
+		return CHECK >= FROM && CHECK <= TO && SKIP_DAYS.includes(CHECK.getDay());
 	}
 
 	enter(ev): void {
