@@ -114,7 +114,11 @@ import { take, filter } from 'rxjs/operators';
 										[placement]="placement"
 										[delay]="delay"
 										[ngStyle]="{ backgroundColor: project?.color }"
-										*ngIf="calculateFromTo(project?.from, project?.to, weekday)"
+										*ngIf="
+											(calculateFromTo(project?.from, project?.to, weekday) &&
+												!project?.excludeDays.includes(weekday)) ||
+											project?.includeDays.includes(weekday)
+										"
 										(click)="
 											editInfo.emit({ person: person?.id, project: project })
 										"
@@ -126,9 +130,14 @@ import { take, filter } from 'rxjs/operators';
 											open($event, person.id, project, weekday);
 											$event.preventDefault()
 										"
-										*ngIf="isDayOff(project?.from, project?.to, weekday)"
+										*ngIf="
+											(isDayOff(project?.from, project?.to, weekday) &&
+												!project?.includeDays.includes(weekday)) ||
+											project?.excludeDays.includes(weekday)
+										"
 										class="dayOff"
-										>{{ dayOffLabel || 'Day off' }}</span
+									>
+										{{ dayOffLabel || 'Day off' }}</span
 									>
 								</label>
 								<div
@@ -159,11 +168,13 @@ import { take, filter } from 'rxjs/operators';
 			<section class="user-menu">
 				<div
 					*ngIf="
-						calculateFromTo(
+						(calculateFromTo(
 							data?.project?.from,
 							data?.project?.to,
 							data?.weekday
-						)
+						) &&
+							!data?.project?.excludeDays.includes(data?.weekday)) ||
+						data?.project?.includeDays.includes(data?.weekday)
 					"
 					(click)="excludeDay(data)"
 				>
@@ -171,7 +182,9 @@ import { take, filter } from 'rxjs/operators';
 				</div>
 				<div
 					*ngIf="
-						isDayOff(data?.project?.from, data?.project?.to, data?.weekday)
+						(isDayOff(data?.project?.from, data?.project?.to, data?.weekday) &&
+							!data?.project?.includeDays.includes(data?.weekday)) ||
+						data?.project?.excludeDays.includes(data?.weekday)
 					"
 					(click)="includeDay(data)"
 				>
@@ -492,6 +505,7 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	) {}
 
 	ngOnChanges(changes: SimpleChanges) {
+		console.log(changes);
 		if (changes.showBy) {
 			this.generateAllDates();
 		}
@@ -567,6 +581,10 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		}
 
 		return WEEKDAYS;
+	}
+
+	excludeIncludeCheck(day): boolean {
+		return false;
 	}
 
 	calculateFromTo(start, end, current): boolean {
@@ -775,6 +793,8 @@ export interface Project {
 	to: Date;
 	hours: string;
 	description: string;
+	includeDays: Date[];
+	excludeDays: Date[];
 }
 
 export type ShowBy = 'month' | 'day';

@@ -22,6 +22,8 @@ export class AppComponent {
 					from: '2019-08-03T08:00:00Z',
 					to: '2020-03-11T08:00:00Z',
 					description: 'test details',
+					includeDays: [],
+					excludeDays: [],
 				},
 				{
 					id: 11,
@@ -31,6 +33,8 @@ export class AppComponent {
 					from: '2019-10-03T08:00:00Z',
 					to: '2020-01-01T08:00:00Z',
 					description: 'another details',
+					includeDays: [],
+					excludeDays: [],
 				},
 			],
 		},
@@ -45,6 +49,8 @@ export class AppComponent {
 					hours: '/ 8h',
 					from: '2019-10-03T08:00:00Z',
 					to: '2020-01-01T08:00:00Z',
+					includeDays: [],
+					excludeDays: [],
 				},
 			],
 		},
@@ -60,6 +66,8 @@ export class AppComponent {
 					from: '2019-05-01T08:00:00Z',
 					to: '2021-02-01T08:00:00Z',
 					description: 'test details',
+					includeDays: [],
+					excludeDays: [],
 				},
 			],
 		},
@@ -73,9 +81,39 @@ export class AppComponent {
 		console.log(ev);
 	}
 	handleExclude(ev) {
-		console.log(ev);
+		const { user, project, weekday } = ev;
+		this.persons = this.persons.map((person) => {
+			if (person.id === user) {
+				person.data.forEach((proj) => {
+					if (proj.id === project.id) {
+						if (proj.includeDays.includes(weekday)) {
+							proj.includeDays = proj.includeDays.filter(
+								(el) => el !== weekday
+							);
+						}
+						proj.excludeDays.push(weekday);
+					}
+				});
+			}
+			return person;
+		});
 	}
 	handleInclude(ev) {
-		console.log(ev);
+		const { user, project, weekday } = ev;
+		this.persons = this.persons.map((person) => {
+			if (person.id === user) {
+				person.data.forEach((proj) => {
+					if (proj.id === project.id) {
+						if (proj.excludeDays.includes(weekday)) {
+							proj.excludeDays = proj.excludeDays.filter(
+								(el) => el !== weekday
+							);
+						}
+						proj.includeDays.push(weekday);
+					}
+				});
+			}
+			return person;
+		});
 	}
 }
