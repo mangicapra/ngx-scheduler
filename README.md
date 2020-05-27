@@ -1,3 +1,7 @@
+### Demo
+
+Fully working [demo](https://stackblitz.com/edit/angular-schedule-example)
+
 ### Dependencies
 
 `@angular/cdk`
@@ -131,3 +135,12 @@ When sending data you must send predefined fields:
 ```
 
 To select day range click on one cell and drag in one direction, if by accident you end up in a different row nothing will happen since package tracks start row.
+
+### Licence
+
+MIT
+
+### TODO
+
+- improve selecting
+- improve demo

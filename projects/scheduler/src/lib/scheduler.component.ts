@@ -487,11 +487,11 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 	@ViewChild('userMenu', { static: true }) userMenu: TemplateRef<any>;
 	@ViewChildren('selectionDiv') selections: QueryList<any>;
 	@Input() persons: Person[];
-	@Input() showBy: ShowBy;
+	@Input() showBy: ShowBy | string;
 	@Input() delay: number;
 	@Input() dayOffLabel: string;
 	@Input() todayButtonLabel: string;
-	@Input() placement: Placement;
+	@Input() placement: Placement | string;
 	@Output() finishedSelecting = new EventEmitter();
 	@Output() editInfo = new EventEmitter();
 	@Output() excludedDay = new EventEmitter();
