@@ -16,12 +16,12 @@ import {
 	TemplateRef,
 	ViewContainerRef,
 } from '@angular/core';
-import { LibConfig } from './scheduler.config';
 import { USER_OPTIONS } from './lib.config.token';
 import { Subscription, fromEvent } from 'rxjs';
 import { OverlayRef, Overlay } from '@angular/cdk/overlay';
 import { TemplatePortal } from '@angular/cdk/portal';
 import { take, filter } from 'rxjs/operators';
+import { Day, Person, ShowBy, Placement, LibConfig } from './interfaces';
 
 @Component({
 	selector: 'ngx-scheduler',
@@ -773,31 +773,3 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		return el.id;
 	}
 }
-
-export interface Day {
-	month: Date;
-	weekDays: Date[];
-}
-
-export interface Person {
-	id: number;
-	name: string;
-	departments?: string[];
-	data: Project[];
-}
-
-export interface Project {
-	id: number;
-	name: string;
-	color: string;
-	from: Date | string;
-	to: Date | string;
-	hours?: string;
-	description?: string;
-	includeDays: Date[] | string[];
-	excludeDays: Date[] | string[];
-}
-
-export type ShowBy = 'month' | 'day';
-
-export type Placement = 'top' | 'bottom' | 'left' | 'right';

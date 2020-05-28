@@ -2,9 +2,9 @@ import { NgModule, ModuleWithProviders } from '@angular/core';
 import { SchedulerComponent } from './scheduler.component';
 import { CommonModule } from '@angular/common';
 import { TooltipDirective } from './tooltip.directive';
-import { LibConfig } from './scheduler.config';
 import { USER_OPTIONS } from './lib.config.token';
 import { OverlayModule } from '@angular/cdk/overlay';
+import { LibConfig } from './interfaces';
 
 @NgModule({
 	declarations: [SchedulerComponent, TooltipDirective],
