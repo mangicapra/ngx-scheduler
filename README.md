@@ -136,6 +136,8 @@ When sending data you must send predefined fields:
 
 To select day range click on one cell and drag in one direction, if by accident you end up in a different row nothing will happen since package tracks start row.
 
+#### This package is still in development phase, so every feedback is welcomed.
+
 ### Licence
 
 MIT
@@ -143,4 +145,3 @@ MIT
 ### TODO
 
 - improve selecting
-- improve demo

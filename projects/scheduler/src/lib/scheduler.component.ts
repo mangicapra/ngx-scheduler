@@ -105,10 +105,7 @@ import { take, filter } from 'rxjs/operators';
 									*ngFor="let project of person?.data; trackBy: trackData"
 								>
 									<span
-										(contextmenu)="
-											open($event, person.id, project, weekday);
-											$event.preventDefault()
-										"
+										(contextmenu)="open($event, person.id, project, weekday)"
 										[showTooltip]="libConfig?.showTooltip"
 										[tooltip]="project?.description || ''"
 										[placement]="placement"
@@ -604,7 +601,12 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		const TO = new Date(end);
 		const CHECK = new Date(current);
 		const SKIP_DAYS = this.libConfig.skipDays || [0, 6];
-		return CHECK >= FROM && CHECK <= TO && SKIP_DAYS.includes(CHECK.getDay());
+		return (
+			CHECK >= FROM &&
+			CHECK <= TO &&
+			SKIP_DAYS.includes(CHECK.getDay()) &&
+			this.showBy !== 'month'
+		);
 	}
 
 	enter(ev): void {
@@ -690,43 +692,47 @@ export class SchedulerComponent implements OnInit, AfterViewInit, OnChanges {
 		return months;
 	}
 
-	open({ x, y }: MouseEvent, user, project, weekday) {
-		this.close();
-		const positionStrategy = this.overlay
-			.position()
-			.flexibleConnectedTo({ x, y })
-			.withPositions([
-				{
-					originX: 'end',
-					originY: 'bottom',
-					overlayX: 'end',
-					overlayY: 'top',
-				},
-			]);
+	open(ev: MouseEvent, user, project, weekday) {
+		if (this.showBy === 'day') {
+			const { x, y } = ev;
+			ev.preventDefault();
+			this.close();
+			const positionStrategy = this.overlay
+				.position()
+				.flexibleConnectedTo({ x, y })
+				.withPositions([
+					{
+						originX: 'end',
+						originY: 'bottom',
+						overlayX: 'end',
+						overlayY: 'top',
+					},
+				]);
 
-		this.overlayRef = this.overlay.create({
-			positionStrategy,
-			scrollStrategy: this.overlay.scrollStrategies.close(),
-		});
+			this.overlayRef = this.overlay.create({
+				positionStrategy,
+				scrollStrategy: this.overlay.scrollStrategies.close(),
+			});
 
-		this.overlayRef.attach(
-			new TemplatePortal(this.userMenu, this.viewContainerRef, {
-				$implicit: { user, project, weekday },
-			})
-		);
+			this.overlayRef.attach(
+				new TemplatePortal(this.userMenu, this.viewContainerRef, {
+					$implicit: { user, project, weekday },
+				})
+			);
 
-		this.sub = fromEvent<MouseEvent>(document, 'click')
-			.pipe(
-				filter((event) => {
-					const clickTarget = event.target as HTMLElement;
-					return (
-						!!this.overlayRef &&
-						!this.overlayRef.overlayElement.contains(clickTarget)
-					);
-				}),
-				take(1)
-			)
-			.subscribe(() => this.close());
+			this.sub = fromEvent<MouseEvent>(document, 'click')
+				.pipe(
+					filter((event) => {
+						const clickTarget = event.target as HTMLElement;
+						return (
+							!!this.overlayRef &&
+							!this.overlayRef.overlayElement.contains(clickTarget)
+						);
+					}),
+					take(1)
+				)
+				.subscribe(() => this.close());
+		}
 	}
 
 	close() {
